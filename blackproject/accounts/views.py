@@ -13,8 +13,8 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 
-import face_recognition
-import os
+# import face_recognition
+# import os
 import cv2
 import pickle
 from PIL import Image, ImageTk
@@ -39,10 +39,10 @@ def register_user(request):
     
 
 # accounts/views.py
-def add(img,name):
-    embeddings = face_recognition.face_encodings(img)[0]
-    file = open(os.path.join('../media/registered', '{}.pickle'.format(name)), 'wb')
-    pickle.dump(embeddings, file)
+# def add(img,name):
+#     embeddings = face_recognition.face_encodings(img)[0]
+#     file = open(os.path.join('../media/registered', '{}.pickle'.format(name)), 'wb')
+#     pickle.dump(embeddings, file)
 
 
 from .models import CustomUser
