@@ -7,7 +7,7 @@ import base64
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import UserSerializer
+from .serializers import UserSerializer,StockSerializer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,15 +25,16 @@ def register_user(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            filepath="../media/test/base.txt"
-            f = open(filepath, "w")
-            f.write(request.data.get('faceid'))
-            f.close()
-            convert_64_to_image(filepath)
-            capture = cv2.imread("../media/test/image.jpg")
+            # filepath="../media/test/base.txt"
+            # f = open(filepath, "w")
+            # f.write(request.data.get('image'))
+            # f.close()
+            # convert_64_to_image(filepath)
+            # capture = cv2.imread("../media/test/image.jpg")
             
-            add(capture,request.data.get('username'))
+            # add(capture,request.data.get('username'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(request.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -49,7 +50,7 @@ from .models import CustomUser
 @api_view(['POST'])
 def user_login(request):
     if request.method == 'POST':
-        username = request.data.get('username')
+        username = request.data.get('email')
         password = request.data.get('password')
 
         user = None
@@ -91,7 +92,7 @@ def user_face_check(request):
         try:
             filepath="../media/test/base.txt"
             f = open(filepath, "w")
-            f.write(request.data.get('faceid'))
+            f.write(request.data.get('image'))
             f.close()
             convert_64_to_image(filepath)
             capture = cv2.imread("../media/test/image.jpg")
@@ -143,3 +144,45 @@ def recognize(img, db_path):
         return True
     else:
         return False
+
+from django.http import HttpResponse
+
+def test(request):
+    return HttpResponse("<h1>Page was found</h1>")
+    
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def alldata(request):
+    if request.method == 'POST':
+        try:
+            user = CustomUser.objects.get(email=request.data.get('email'))
+            # Delete the user's token to logout
+            data={
+                "user":user.username,
+                "email":user.email,
+                # "password":user.password,
+                "avalcash":user.avalcash,
+                "investedcash":user.investedcash,
+                "profit":user.profit
+            }
+            
+            # return Response({'message': "true"}, status=status.HTTP_200_OK)
+            return Response({'message': data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+@api_view(['POST'])
+def add_stock(request):
+    if request.method == 'POST':
+        serializer = StockSerializer(data=request.data)
+        user = CustomUser.objects.get(email=request.data.get('email'))
+        if serializer.is_valid():
+            serializer.save()
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(request.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
